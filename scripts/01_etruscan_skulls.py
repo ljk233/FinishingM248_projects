@@ -14,34 +14,51 @@
 # ---
 
 # %% [markdown]
-# # Hypothesis test: Comparing skull sizes of Etruscans and Italians
+# # Comparing skull sizes of Etruscans and Italians
 #
 # ## Summary
 #
-# **description**
-# : "a two sample **t**-test of equal means"
+# ### Data
 #
-# **data**
-# : `data/skulls.csv`
+# source: `data/skulls.csv`
 #
-# - **Etruscan** `float` : "breadth of etruscan skulls in mm"
-# - **Italian** `float` : "breadth of italian skulls in mm"
+# fields:
 #
-# **summary results**
-# :
+# - Etruscan, `float` : "breadth of etruscan skulls (mm)"
+# - Italian, `float` : "breadth of italian skulls (mm)"
+#
+#
+# ### Method
+#
+# - Data modelled using a normal distribution.
+# - Normality Checked using a histogram and normal probability plot.
+# - Two sample, two-tailed **t**-test used to test the hypothesis that
+#   the mean skull breadth of Etruscan skulls is equal to that of Italian
+#   skulls.
+#
+# ### Summary results
 #
 # ```python
-# res(
-#     "diff": 11.3310,
-#     "95%_confint": (9.454, 13.208),
-#     "tstat": 11.925,
-#     "pval": 0.000,
-#     "dof": 152)
+# res_descr{
+#     'etr_size': 84, 'etr_mean': 143.774, 'etr_confint': (142.478, 145.069),
+#     'ita_size': 70, 'ita_mean': 132.443, 'ita_confint': (131.072, 133.814),
+#     'diff_mean': 11.331, 'diff_confint': (9.454, 13.208)}
 # ```
 #
-# **output**
-# : <!--Add path to FinishingM248-->
+# ```python
+# res_test{
+#     'tstat': 11.925, 'pval': 0.000, 'dof': 152.0}
+# ```
 #
+# ### Output
+#
+# <!--Add path to FinishingM248-->
+#
+# ### Reference
+#
+# m248.b.act22
+#
+# -----
 
 # %% [markdown]
 # ## Results
@@ -50,103 +67,100 @@
 # ### Setup the notebook
 
 # %%
-# chage working dir, testing update
-import os
-os.chdir("..\\")
-
-# %%
-# import packages and modules
-from statsmodels.stats.weightstats import CompareMeans
-from scipy.stats import probplot
+from scipy import stats
+import statsmodels.stats.weightstats as sm
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-
-# %%
-# set default seaborn theme
+import os
 sns.set_theme()
 
 # %%
+# change wkdir
+os.chdir("..\\")
+
+# %%
 # import the data
-df_skulls = pd.read_csv("data\\skulls.csv")
-
-# %% [markdown]
-# ### Declare local variables
-
-# %%
-# get columns as Series
-etruscan = df_skulls["Etruscans"].dropna()
-italian = df_skulls["Italians"].dropna()
-
-# %%
-# declare and initialise CompareMeans object for the hypothesis test
-ttest = CompareMeans.from_data(data1=etruscan, data2=italian)
-
-# %%
-# construct new df for histogram by melting df_skulls from wide -> long
-mskulls = df_skulls.melt(
-    value_vars=["Etruscans", "Italians"],
-    var_name="skull",
-    value_name="size")
-# drop NaN value, cast column to int
-mskulls.dropna(inplace=True)
-mskulls["size"] = mskulls["size"].astype("int")
+data = pd.read_csv("data\\skulls.csv")
 
 # %% [markdown]
 # ### Describe the data
 
 # %%
-# get descriptive table
-df_skulls.describe().T
+data.describe().T
+
+# %% [markdown]
+# ### Declare local variables
 
 # %%
-# 95% t-interval etruscan
-ttest.d1.tconfint_mean()
+etr = data["Etruscans"]
+ita = data["Italians"].dropna()
+ttest = sm.CompareMeans.from_data(data1=etr, data2=ita)
+res_descr = dict()
+res_test = dict()
+
+# %% [markdown]
+# ### Gather descriptive statistics
 
 # %%
-# 95% t-interval italian
-ttest.d2.tconfint_mean()
+# describe Etruscan sample
+res_descr["etr_size"] = etr.size
+res_descr["etr_mean"] = etr.mean()
+res_descr["etr_confint"] = ttest.d1.tconfint_mean()
+
+# %%
+# describe Italian sample
+res_descr["ita_size"] = ita.size
+res_descr["ita_mean"] = ita.mean()
+res_descr["ita_confint"] = ttest.d2.tconfint_mean()
+
+# %%
+# describe differences between the samples
+res_descr["diff_mean"] = etr.mean() - ita.mean()
+res_descr["diff_confint"] = ttest.tconfint_diff()
+
+# %%
+# output descriptive stats
+res_descr
 
 # %% [markdown]
 # ### Visualise the data
 
 # %%
 # frequency histograms
-g = sns.FacetGrid(mskulls, col="skull")
-g.map_dataframe(sns.histplot, x="size", bins=10)
-# save figs, drop to figures dir
+mdata = data.melt()
+mdata.dropna(inplace=True)
+g = sns.FacetGrid(mdata, col="variable")
+g.map_dataframe(sns.histplot, x="value", bins=10)
+g.set_axis_labels("Size", "Count")
 os.chdir("figures")
 plt.savefig("skulls_fig1")
 os.chdir("..")
 plt.show()
 
 # %%
-# Check normality of samples
-# declare and initialise the fig and axes
+# probability plot of samples
 f, (ax1, ax2) = plt.subplots(ncols=2, sharey=True)
-# construct probability plots
-probplot(x=etruscan, plot=ax1)
-probplot(x=italian, plot=ax2)
-# add discriptive title and labels
+stats.probplot(x=etr, plot=ax1)
+stats.probplot(x=ita, plot=ax2)
 ax1.set(title="Probability plot = Etruscans")
 ax2.set(title="Probability plot = Italians")
-# save figs, drop to figures dir
 os.chdir("figures")
 plt.savefig("skulls_fig2")
 os.chdir("..")
-# output the probability plots
 plt.show()
 
 # %% [markdown]
 # ### Run the hypothesis test
 
 # %%
-# Check assumption of common population variance
-etruscan.var(), italian.var()
+# check sample variances < 3
+max(etr.var() / ita.var(), ita.var() / etr.var())
 
 # %%
-ttest.summary()
+# run the test
+res_test["tstat"], res_test["pval"], res_test["dof"] = ttest.ttest_ind()
 
 # %%
-# get degrees of freedom
-ttest.d1.nobs + ttest.d2.nobs - 2
+# output results
+res_test
