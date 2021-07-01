@@ -32,10 +32,10 @@
 # - Data modelled using a normal distribution
 # - Normality Checked using a histogram and normal probability plot
 # - Assumption of common population variance checked
-# - Descriptive stats (mean and 95% **t**-interval) returned for samples
+# - Mean and 95% **t**-interval returned for samples
 # - Two sample, two-tailed **t**-test used to test the hypothesis that
-#   the mean skull breadth of Etruscan skulls is equal to that of Italian
-#   skulls
+#   the mean skull breadth of Etruscan skulls is equal to that of
+#   Italian skulls
 #
 # ### Summary results
 #
@@ -116,19 +116,10 @@ os.chdir("..")
 plt.show()
 
 # %% [markdown]
-# Histogram shows the data are unimodal and approximately symmetric.
-# Probability plot confirms the data are normally distributed.
-# Neither show that modelling the data as normal is inappropriate.
-
-# %% [markdown]
 # ### Check for common population variance
 
 # %%
 max(etr.var() / ita.var(), ita.var() / etr.var())
-
-# %% [markdown]
-# Ratio of sample variances is less than 3, so we can assume common
-# population variance.
 
 # %% [markdown]
 # ### Run the hypothesis test
