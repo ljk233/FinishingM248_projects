@@ -32,6 +32,7 @@
 #
 # - Data modelled using a normal distribution.
 # - Normality Checked using a histogram and normal probability plot.
+# - Descriptive stats (mean and 95% **t**-interval) returned for samples
 # - Two sample, two-tailed **t**-test used to test the hypothesis that
 #   the mean skull breadth of Etruscan skulls is equal to that of Italian
 #   skulls.
@@ -39,15 +40,7 @@
 # ### Summary results
 #
 # ```python
-# res_descr{
-#     'etr_size': 84, 'etr_mean': 143.774, 'etr_confint': (142.478, 145.069),
-#     'ita_size': 70, 'ita_mean': 132.443, 'ita_confint': (131.072, 133.814),
-#     'diff_mean': 11.331, 'diff_confint': (9.454, 13.208)}
-# ```
-#
-# ```python
-# res_test{
-#     'tstat': 11.925, 'pval': 0.000, 'dof': 152.0}
+# test_results{'tstat': 11.925, 'pval': 0.000, 'dof': 152.0}
 # ```
 #
 # ### Output
@@ -67,61 +60,39 @@
 # ### Setup the notebook
 
 # %%
+# import packages and modules
 from scipy import stats
 import statsmodels.stats.weightstats as sm
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import os
+
+# %%
+# set seaborn theme
 sns.set_theme()
 
 # %%
-# change wkdir
+# change wkdir and import the data
 os.chdir("..\\")
+data = pd.read_csv("data\\skulls.csv")
 
 # %%
-# import the data
-data = pd.read_csv("data\\skulls.csv")
+# declare and intialise columns of data as series
+etr = data["Etruscans"]
+ita = data["Italians"].dropna()
+
+# %% [markdown]
+# ### Preview the data
+
+# %%
+data.head()
 
 # %% [markdown]
 # ### Describe the data
 
 # %%
 data.describe().T
-
-# %% [markdown]
-# ### Declare local variables
-
-# %%
-etr = data["Etruscans"]
-ita = data["Italians"].dropna()
-ttest = sm.CompareMeans.from_data(data1=etr, data2=ita)
-res_descr = dict()
-res_test = dict()
-
-# %% [markdown]
-# ### Gather descriptive statistics
-
-# %%
-# describe Etruscan sample
-res_descr["etr_size"] = etr.size
-res_descr["etr_mean"] = etr.mean()
-res_descr["etr_confint"] = ttest.d1.tconfint_mean()
-
-# %%
-# describe Italian sample
-res_descr["ita_size"] = ita.size
-res_descr["ita_mean"] = ita.mean()
-res_descr["ita_confint"] = ttest.d2.tconfint_mean()
-
-# %%
-# describe differences between the samples
-res_descr["diff_mean"] = etr.mean() - ita.mean()
-res_descr["diff_confint"] = ttest.tconfint_diff()
-
-# %%
-# output descriptive stats
-res_descr
 
 # %% [markdown]
 # ### Visualise the data
@@ -139,7 +110,7 @@ os.chdir("..")
 plt.show()
 
 # %%
-# probability plot of samples
+# probability plot for each sample
 f, (ax1, ax2) = plt.subplots(ncols=2, sharey=True)
 stats.probplot(x=etr, plot=ax1)
 stats.probplot(x=ita, plot=ax2)
@@ -150,17 +121,40 @@ plt.savefig("skulls_fig2")
 os.chdir("..")
 plt.show()
 
+# %%
+# check sample variances < 3 so we can assume equal population variance
+max(etr.var() / ita.var(), ita.var() / etr.var())
+
+# %%
+# declare ComparaMeans object for hypothesis testing
+ttest = sm.CompareMeans.from_data(data1=etr, data2=ita)
+
+# %% [markdown]
+# ### Get confidence intervals
+
+# %%
+# Etruscan
+ttest.d1.tconfint_mean()
+
+# %%
+# Italian
+ttest.d2.tconfint_mean()
+
 # %% [markdown]
 # ### Run the hypothesis test
 
 # %%
-# check sample variances < 3
-max(etr.var() / ita.var(), ita.var() / etr.var())
+# get mean difference
+etr.mean() - ita.mean()
+
+# %%
+# get confint of mean difference
+ttest.tconfint_diff()
 
 # %%
 # run the test
-res_test["tstat"], res_test["pval"], res_test["dof"] = ttest.ttest_ind()
+tstat, pval, dof = ttest.ttest_ind()
 
 # %%
-# output results
-res_test
+# print test values
+tstat, pval, dof
