@@ -14,38 +14,52 @@
 # ---
 
 # %% [markdown]
-# # Hypothesis test: Pass rate of the practical driving test in the UK
+# # Pass rate of the practical driving test in the UK
 #
 # ## Summary
 #
-# **description**
-# : "a one sample **z**-test of equal means"
+# ### Data
 #
-# **data**
-# : `data/practical_test.csv`
+# Centre `str` :
+# location of test centre
 #
-# - **Centre** `str` : "location of test centre"
-# - **Male** `float` : "mean percentage pass rate of males at the
-#                       centre from April 2014 to March 2015"
-# - **Female** `float` : "mean percentage pass rate of females at the
-#                         centre from April 2014 to March 2015"
-# - **Total** `float` : "mean percentage pass rate of both males and
-#                        females from April 2014 to March 2015"
+# Male `float` :
+# mean percentage pass rate of males at the centre from April 2014 to
+# March 2015
 #
-# **summary results**
-# :
+# Female `float` :
+# mean percentage pass rate of females at the centre from April 2014 to
+# March 2015
+#
+# Total `float` :
+# mean percentage pass rate of both males and females from April 2014
+# to March 2015
+#
+# ### Method
+#
+# - Data modelled using an apporximate normal distribution
+# - Frequency histogram and normal probability plot to check symmetry of
+#   of data
+# - Mean and 95% **z**-interval returned for samples
+# - One sample, two-tailed **z**-test used to test the hypothesis that
+#   the mean total pass rate of the UK driving practical test was equal
+#   to 47.1%.
+#
+# ### Summary results
 #
 # ```python
-# res(
-#     "sample_mean": 49.63038,
-#     "95%_confint": (48.84034, 50.42042),
-#     "zstat": 6.277,
-#     "pval": 0.00000)
+# test_results{'zstat': 6.277, 'pval': 3.441}
 # ```
 #
-# **output**
-# : <!--Add path to FinishingM248-->
+# ### Output
 #
+# <!--Add path to FinishingM248-->
+#
+# ### Reference
+#
+# m248.b.act23
+#
+# -----
 
 # %% [markdown]
 # ## Results
@@ -53,82 +67,73 @@
 # ### Setup the notebook
 
 # %%
-# change working dir
-import os
-os.chdir("..\\")
-
-# %%
-# import packages
-from statsmodels.stats.weightstats import DescrStatsW
-from scipy.stats import probplot
+# import packages and modules
+from scipy import stats
+import statsmodels.stats.weightstats as sm
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import os
 
 # %%
-# set default seaborn theme
+# set seaborn theme
 sns.set_theme()
 
 # %%
-# import the data
-df_prac_test = pd.read_csv("data\\practical_test.csv")
+# change wkdir and import the data
+os.chdir("..\\")
+data = pd.read_csv("data\\practical_test.csv")
 
 # %% [markdown]
-# ### Declare local variables
+# ### Preview and describe the data
 
 # %%
-# get columns as Series
-r_total = df_prac_test["Total"]
+data[["Total"]].head()
 
 # %%
-# declare and initialise DescrStatsW object for the hypothesis test
-ztest = DescrStatsW(data=r_total)
-
-# %%
-# declare and initialise results dictionary
-res = dict()
+data[["Total"]].describe().T
 
 # %% [markdown]
-# ### Describe the sample
+# ### Visualise the data
 
 # %%
-# send summary table to df for pretty output
-pd.DataFrame(r_total).describe().T
-
-# %%
-# 95% z-interval
-ztest.zconfint_mean()
-
-# %% [markdown]
-# ### Visualise the sample
-
-# %%
-# plot the sample as a histogram
-ax = sns.histplot(x=r_total, bins=12)
-# save figs, drop to figures dir
+# frequency histogram
+f, ax = plt.subplots()
+ax = sns.histplot(data=data, x="Total", bins=12)
 os.chdir("figures")
 plt.savefig("practest_fig1")
 os.chdir("..")
-# output the plot
 plt.show()
 
 # %%
-# normal probability plot of the same
+# probability plot of sample
 f, ax = plt.subplots()
-# construct the probability plot
-probplot(x=r_total, plot=ax)
-# save figs, drop to figures dir
+stats.probplot(x=data["Total"], plot=ax)
 os.chdir("figures")
 plt.savefig("practest_fig2")
 os.chdir("..")
-# output the plot
 plt.show()
 
 # %% [markdown]
-# ### Run the $z$-test
+# ### Run the hypothesis test
 
 # %%
-# populate res
-res["zstat"], res["pval"] = ztest.ztest_mean(value=47.1)
-# print results
-res
+d1 = sm.DescrStatsW(data=data["Total"])
+
+# %% [markdown]
+# #### Get confidence interval
+
+# %%
+d1.zconfint_mean()
+
+# %% [markdown]
+# #### Run the test
+
+# %%
+mu0 = 47.1
+
+# %%
+zstat, pval = d1.ztest_mean(value=mu0)
+
+# %%
+zstat, pval
