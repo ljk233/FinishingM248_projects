@@ -20,22 +20,22 @@
 #
 # ### Data
 #
-# source: `data/skulls.csv`
+# Etruscan, `float` :
+# breadth of etruscan skulls (mm)
 #
-# fields:
-#
-# - Etruscan, `float` : "breadth of etruscan skulls (mm)"
-# - Italian, `float` : "breadth of italian skulls (mm)"
+# Italian, `float` :
+# breadth of italian skulls (mm)
 #
 #
 # ### Method
 #
-# - Data modelled using a normal distribution.
-# - Normality Checked using a histogram and normal probability plot.
+# - Data modelled using a normal distribution
+# - Normality Checked using a histogram and normal probability plot
+# - Assumption of common population variance checked
 # - Descriptive stats (mean and 95% **t**-interval) returned for samples
 # - Two sample, two-tailed **t**-test used to test the hypothesis that
 #   the mean skull breadth of Etruscan skulls is equal to that of Italian
-#   skulls.
+#   skulls
 #
 # ### Summary results
 #
@@ -76,20 +76,14 @@ sns.set_theme()
 # change wkdir and import the data
 os.chdir("..\\")
 data = pd.read_csv("data\\skulls.csv")
-
-# %%
-# declare and intialise columns of data as series
 etr = data["Etruscans"]
 ita = data["Italians"].dropna()
 
 # %% [markdown]
-# ### Preview the data
+# ### Preview and describe the data
 
 # %%
 data.head()
-
-# %% [markdown]
-# ### Describe the data
 
 # %%
 data.describe().T
@@ -121,16 +115,29 @@ plt.savefig("skulls_fig2")
 os.chdir("..")
 plt.show()
 
-# %%
-# check sample variances < 3 so we can assume equal population variance
-max(etr.var() / ita.var(), ita.var() / etr.var())
+# %% [markdown]
+# Histogram shows the data are unimodal and approximately symmetric.
+# Probability plot confirms the data are normally distributed.
+# Neither show that modelling the data as normal is inappropriate.
+
+# %% [markdown]
+# ### Check for common population variance
 
 # %%
-# declare ComparaMeans object for hypothesis testing
+max(etr.var() / ita.var(), ita.var() / etr.var())
+
+# %% [markdown]
+# Ratio of sample variances is less than 3, so we can assume common
+# population variance.
+
+# %% [markdown]
+# ### Run the hypothesis test
+
+# %%
 ttest = sm.CompareMeans.from_data(data1=etr, data2=ita)
 
 # %% [markdown]
-# ### Get confidence intervals
+# #### Get confidence intervals
 
 # %%
 # Etruscan
@@ -141,7 +148,7 @@ ttest.d1.tconfint_mean()
 ttest.d2.tconfint_mean()
 
 # %% [markdown]
-# ### Run the hypothesis test
+# #### Describe the difference
 
 # %%
 # get mean difference
@@ -151,10 +158,11 @@ etr.mean() - ita.mean()
 # get confint of mean difference
 ttest.tconfint_diff()
 
+# %% [markdown]
+# #### Run the test
+
 # %%
-# run the test
 tstat, pval, dof = ttest.ttest_ind()
 
 # %%
-# print test values
 tstat, pval, dof
