@@ -16,36 +16,60 @@
 # %% [markdown]
 # # Comparing skull sizes of Etruscans and Italians
 #
-# ## Summary
+# ## Notes
+#
+# ### Question of interest
+#
+# Do the ancient Etruscan people of Italy share a common ancestral link
+# with those of native Italians?
 #
 # ### Data
 #
-# Etruscan, `float` :
-# breadth of etruscan skulls (mm)
-#
-# Italian, `float` :
-# breadth of italian skulls (mm)
+# - Data consists of 154 observations of skull breadth
+# - Modern male Italians used as substitute for ancient Italians
+# - Fields:
+#   - type, `str` : origin of skull, Etruscan or Italian
+#   - size, `float` : skull breadth (mm)
 #
 #
 # ### Method
 #
-# - Data modelled using a normal distribution
-# - Normality Checked using a histogram and normal probability plot
-# - Assumption of common population variance checked
-# - Mean and 95% **t**-interval returned for samples
-# - Two sample, two-tailed **t**-test used to test the hypothesis that
-#   the mean skull breadth of Etruscan skulls is equal to that of
-#   Italian skulls
+# - Given data is biological, reasonable to suppose that it can modelled
+#   normally
+#   - Normality of samples checked using a frequency histogram and normal
+#     probability plot
+# - Mean and 95% **t**-interval returned both samples
+# - Checked assumption of common population variance
+# - Performed **t**-test: mean skull breadth of the Etruscan skulls is
+#   equal to that of the Italian skulls
 #
-# ### Summary results
+# ### Results
 #
-# ```python
-# test_results{'tstat': 11.925, 'pval': 0.000, 'dof': 152.0}
-# ```
+# - Frequency histogram shows both samples are unimodal and symmetric,
+#   as we would expect for normally distributed data
+# - Probability plots show the data to closely follow a fitted straight
+#   line. Neither show the assumption of normality is inappropriate.
+# - Description of Etruscan skull sample:
+#   - size=84
+#   - mean=143.7738
+#   - confint_mean=(142.4781, 145.0695)
+# - Description of Italian skull sample:
+#   - size=70
+#   - mean=132.4429
+#   - confint_mean=(132.4429, 133.8139)
+# - **t**-test results
+#   - **t** = 11.925, with 152 degrees of freedom
+#   - **p**-value < 0.0001
 #
-# ### Output
+# ### Discussion
 #
-# <!--Add path to FinishingM248-->
+# - Null hypothesis is rejected with **p**-value < 0.0001
+# - Very strong evidence that the mean Etruscan skull breadth is not
+#   equal to that of the mean Italian skull breadth
+# - Given **t** > 0, we conclude that there is evidence that the Etruscans
+#   had larger skulls on average than Italians
+# - Result suggests there is not a common ancestral link between the two
+#   ancient peoples
 #
 # ### Reference
 #
@@ -54,7 +78,7 @@
 # -----
 
 # %% [markdown]
-# ## Results
+# ## Full Results
 
 # %% [markdown]
 # ### Setup the notebook
@@ -62,98 +86,81 @@
 # %%
 # import packages and modules
 from scipy import stats
-import statsmodels.stats.weightstats as sm
 import pandas as pd
+import statsmodels.stats.weightstats as sm
 import seaborn as sns
 import matplotlib.pyplot as plt
-import os
-
-# %%
+import sys
 # set seaborn theme
 sns.set_theme()
 
 # %%
-# change wkdir and import the data
-os.chdir("..\\")
-data = pd.read_csv("data\\skulls.csv")
-etr = data["Etruscans"]
-ita = data["Italians"].dropna()
+# import custom modules not in root
+sys.path[0] = "..\\"  # update path
+from src import load, describe  # noqa: E402
 
 # %% [markdown]
-# ### Preview and describe the data
+# ### Import the data
 
 # %%
-data.head()
+# get data
+skulls: pd.DataFrame = load.Data.get("skulls")
 
 # %%
-data.describe().T
+# preview data
+skulls.head()
+
+# %%
+# check dtypes
+skulls.dtypes
+
+# %% [markdown]
+# Column `Type` has come through as `object`, rather than `str`.
+# This will not affect the analysis, so we do not cast the column to `str`.
+
+# %%
+# get samples as series
+etr: pd.Series = skulls.query('type == "Etruscan"')["size"]
+ita: pd.Series = skulls.query('type == "Italian"')["size"]
 
 # %% [markdown]
 # ### Visualise the data
 
 # %%
 # frequency histograms
-mdata = data.melt()
-mdata.dropna(inplace=True)
-g = sns.FacetGrid(mdata, col="variable")
-g.map_dataframe(sns.histplot, x="value", bins=10)
+g = sns.FacetGrid(skulls, col="type")
+g.map_dataframe(sns.histplot, x="size", bins=10)
 g.set_axis_labels("Size", "Count")
-os.chdir("figures")
-plt.savefig("skulls_fig1")
-os.chdir("..")
 plt.show()
 
 # %%
-# probability plot for each sample
-f, (ax1, ax2) = plt.subplots(ncols=2, sharey=True)
-stats.probplot(x=etr, plot=ax1)
-stats.probplot(x=ita, plot=ax2)
-ax1.set(title="Probability plot = Etruscans")
-ax2.set(title="Probability plot = Italians")
-os.chdir("figures")
-plt.savefig("skulls_fig2")
-os.chdir("..")
+# probability plots
+f, axs = plt.subplots(ncols=2, sharey=True)
+stats.probplot(x=etr, plot=axs[0])
+stats.probplot(x=ita, plot=axs[1])
+axs[0].set(title="Probability plot = Etruscans")
+axs[1].set(title="Probability plot = Italians")
 plt.show()
 
 # %% [markdown]
-# ### Check for common population variance
+# ### Analyse the data
 
 # %%
-max(etr.var() / ita.var(), ita.var() / etr.var())
-
-# %% [markdown]
-# ### Run the hypothesis test
-
-# %%
+# initialise CompareMeans object
 ttest = sm.CompareMeans.from_data(data1=etr, data2=ita)
 
-# %% [markdown]
-# #### Get confidence intervals
+# %%
+# check for common population variance. Expect < 3
+max(etr.var() / ita.var(), etr.var() / ita.var()) < 3
+
 
 # %%
-# Etruscan
-ttest.d1.tconfint_mean()
+describe.parametric_sample(ttest.d1, sample_label="Etruscans")
 
 # %%
-# Italian
-ttest.d2.tconfint_mean()
-
-# %% [markdown]
-# #### Describe the difference
+describe.parametric_sample(ttest.d2, sample_label="Italians")
 
 # %%
-# get mean difference
-etr.mean() - ita.mean()
-
-# %%
-# get confint of mean difference
-ttest.tconfint_diff()
-
-# %% [markdown]
-# #### Run the test
-
-# %%
+# run the test
 tstat, pval, dof = ttest.ttest_ind()
-
-# %%
 tstat, pval, dof
