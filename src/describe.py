@@ -1,87 +1,118 @@
 
 """
-A module desgined to return a description of a sample of data as a
-disctionary.
-It is expected that the passed samples are an object from statsmodels
-package.
+A module of dataclasses used for describing samples during analysis.
+They are replacements for NamedTuples, and only used for aesthetic
+purposes.
+The classes return floats to 6dp.
 """
 
-from statsmodels.stats.weightstats import DescrStatsW, CompareMeans
-from .classes import Sample, ZDiff, TDiff
-from typing import Union
-import pandas as pd
+from dataclasses import dataclass
+from typing import Tuple
 
 
-def parametric_sample(
-        d1: DescrStatsW,
-        a: float = 0.05,
-        use_t: bool = True,
-        as_df: bool = True,
-        sample_label: str = "Sample"
-) -> Union[Sample, pd.DataFrame]:
+@dataclass
+class Sample():
     """
-    returns a description of a sample of data.
-
-    params
-    ======
-    d1, DescrStatsW :
-        sample as object of class DescrStatsW to describe
-    a, float, default = 0.05
-        significance level of the returned CI, as in (1-a)%
-    use_t, bool, default = True
-        Whether to return a t-interval or z-interval
-    as_df, bool, default = True
-        Whether to return the description as a pandas dataframe
-    sample_label, str, default = "Sample"
-        An optional descriptive label for the sample
-
-    return
-    ======
-    Sample or pandas dataframe
+    A dataclass to hold the parametric description of a sample.
     """
-    size: int = int(d1.nobs)
-    mean: float = d1.mean
-    s: Sample = None
-    df: pd.DataFrame() = pd.DataFrame(index=[sample_label])
-
-    if use_t:
-        s = Sample(size, mean, d1.tconfint_mean(alpha=a))
-    else:
-        s = Sample(size, mean, d1.zconfint_mean(alpha=a))
-
-    if as_df:
-        df["size"] = [s.size]
-        df["mean"] = [s.mean]
-        df["[0.025"] = [s.confint_mean[0]]
-        df["0.975]"] = [s.confint_mean[1]]
-        return df
-    else:
-        return s
+    label: str
+    size: int
+    mean: float
 
 
-def parametric_samples_difference(
-        cm: CompareMeans,
-        a: float = 0.05,
-        use_t: bool = True
-) -> Union[ZDiff, TDiff]:
+@dataclass
+class ZSample(Sample):
     """
-    params
-    ======
-    cm, CompareMeans :
-        object of class CompareMeans to describe the difference
-    a, float, default = 0.05
-        significance level of the returned CI, as in (1-a)%
-    use_t, bool, default = True
-        Whether to return a t-interval or z-interval
-
-    retun
-    =====
-    ZDiff or TDiff
+    A dataclass to hold the parametric description of a sample modelled
+    approximately normal.
     """
+    zconfint_mean: Tuple[float]
 
-    diff: float = cm.d1.mean - cm.d2.mean
+    def __repr__(self) -> str:
+        return (
+            f"{self.label}("
+            f"size={int(self.size)}"
+            f", mean={self.mean:.6f}"
+            f", zconfint_mean=({self.zconfint_mean[0]:.6f}"
+            f", {self.zconfint_mean[1]:.6f}))"
+        )
 
-    if use_t:
-        return TDiff(diff, cm.tconfint_diff(alpha=a))
-    else:
-        return ZDiff(diff, cm.zconfint_diff(alpha=a))
+
+@dataclass
+class TSample(Sample):
+    """
+    A dataclass to hold the parametric description of a sample modelled
+    exactly normal.
+    """
+    tconfint_mean: Tuple[float]
+
+    def __repr__(self) -> str:
+        return (
+            f"{self.label}("
+            f"size={int(self.size)}"
+            f", mean={self.mean:.6f}"
+            f", tconfint_mean=({self.tconfint_mean[0]:.6f}"
+            f", {self.tconfint_mean[1]:.6f}))"
+        )
+
+
+@dataclass
+class Diff:
+    """
+    A dataclass to hold the description of the difference
+    between two samples parametric samples
+    """
+    mean_diff: float
+
+
+@dataclass
+class ZDiff(Diff):
+    """
+    A dataclass to hold the description of the difference
+    between two samples parametric samples modelled approximately
+    normally
+    """
+    zconfint_diff: Tuple[float]
+
+    def __repr__(self) -> str:
+        return (
+            f"Difference("
+            f"mean_diff={self.mean_diff:.6f}"
+            f", zconfint_diff=({self.zconfint_diff[0]:.6f}"
+            f", {self.zconfint_diff[1]:.6f}))"
+        )
+
+
+@dataclass
+class TDiff(Diff):
+    """
+    A dataclass to hold the description of the difference
+    between two samples parametric samples modelled normally
+    """
+    tconfint_diff: Tuple[float]
+
+    def __repr__(self) -> str:
+        return (
+            f"Difference("
+            f"mean_diff={self.mean_diff:.6f}"
+            f", tconfint_diff=({self.tconfint_diff[0]:.6f}"
+            f", {self.tconfint_diff[1]:.6f}))"
+        )
+
+
+@dataclass
+class Proportion():
+    """
+    A dataclass to hold the description of a proportion modelled by
+    a normal approximation of the binomial
+    """
+    p_hat: float
+    zconfint_prop: Tuple[float]
+
+    def __repr__(self) -> str:
+        return (
+            f"Proportion("
+            f"p_hat={self.p_hat:.6f}"
+            f", zconfint_prop=({self.zconfint_prop[0]:.6f}"
+            f", {self.zconfint_prop[1]:.6f}))"
+        )
