@@ -91,7 +91,7 @@ plt.show()
 # ltreat: check observations equal to 0
 count: int = 0
 for check in ltreat == 0:
-    if check == True:
+    if check is True:
         count += 1
 count
 
@@ -102,7 +102,7 @@ stats.wilcoxon(x=ltreat, alternative="greater")
 # dtreat: check observations equal to 0
 count: int = 0
 for check in dtreat == 0:
-    if check == True:
+    if check is True:
         count += 1
 count
 

@@ -94,7 +94,7 @@ sns.set_theme()
 # %%
 # import custom modules not in root
 sys.path[0] = "..\\"  # update path
-from src import load, describe, summarise  # noqa: E402
+from src import load  # noqa: E402
 
 # %% [markdown]
 # ### Import the data
@@ -178,5 +178,4 @@ res: pd.Series = pd.Series(res)
 res.var()
 
 # %%
-chisq, pval = stats.chisquare(f_obs=obs_x2, f_exp=exp_x2, ddof=1)
-summarise.ChisqGoodnessOfFit(chisq, pval, 9)
+stats.chisquare(f_obs=obs_x2, f_exp=exp_x2, ddof=1)

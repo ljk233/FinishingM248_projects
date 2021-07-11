@@ -49,15 +49,15 @@
 #
 # ### Results
 #
-# - None of the visualisations show the assumption that both samples are 
-#   normally distributed is inappropriate
+# - None of the visualisations show the assumption that both samples
+#   are normally distributed is inappropriate
 #   - Frequency histogram shows both samples are unimodal and symmetric
 #   - Probability plots show the data to closely follow a fitted straight
 # - Description of samples:
 #   - `Cross(size=15, mean=161.533333, tconfint_mean=(145.509354, 177.557313))`
 #   - `Self(size=15, mean=140.600000, tconfint_mean=(131.510557, 149.689443))`
 # - Description of difference between the samples
-#   - `Difference(size=15, mean=20.933333, tconfint_mean=(0.031193, 41.835473))`
+#   - `Diff(size=15, mean=20.933333, tconfint_mean=(0.031193, 41.835473))`
 # - Paired **t**-test result
 #   - `ResultSummary(tstat=11.924823, pval=0.000000, dof=152)`
 #

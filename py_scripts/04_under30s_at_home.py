@@ -13,9 +13,6 @@
 #     name: python3
 # ---
 
-# %%
-# noqa:  E501
-
 # %% [markdown]
 # # Was the number of Under-30s still living at home in Wales in 2014 greater than the national average?  # noqa:  E501
 #
