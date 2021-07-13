@@ -14,14 +14,9 @@
 # ---
 
 # %% [markdown]
-# # Using the skull size of Etruscan and Italian males to analyse if there was an ancestral link  # noqa: E501
+# # Were the Etruscan people native to Italy?
 #
 # ## Notes
-#
-# ### Question of interest
-#
-# Do the ancient Etruscan people of Italy share a common ancestral link
-# with those of native Italians?
 #
 # ### Data
 #
@@ -30,7 +25,6 @@
 # - Data fields:
 #   - **type** `str` : origin of skull, Etruscan or Italian
 #   - **size** `float` : skull breadth (mm)
-#
 #
 # ### Method
 #
@@ -44,33 +38,6 @@
 # - Checked assumption of common population variance
 # - Performed **t**-test: mean skull breadth of the Etruscan skulls is
 #   equal to that of the Italian skulls
-#
-# ### Results
-#
-# - The data returned the descriptive column `type` as an `object`,
-#   rather than a `str`
-#   - This did not affect the analysis, so not remedial action was taken
-# - None of the visualisations show the assumption that both samples are
-#   normally distributed is inappropriate
-#   - Frequency histogram shows both samples are unimodal and symmetric
-#   - Probability plots show the data to closely follow a fitted straight
-# - Description of samples:
-#   - `Etruscan(size=84, mean=143.8, tconfint_mean=(142.5, 145.1))`
-#   - `Italian(size=70, mean=132.4, tconfint_mean=(131.1, 133.8))`
-# - Description of difference between the samples
-#   - `SampleDiff(mean_diff=11.3, tconfint_diff=(9.5, 13.2))`
-# - **t**-test result
-#   - `ResultSummary(tstat=11.924, pval=0.000000, dof=152)`
-#
-# ### Discussion
-#
-# - Null hypothesis is rejected with **p**-value < 0.000001
-# - Very strong evidence that the mean Etruscan skull breadth is not
-#   equal to that of the mean Italian skull breadth
-# - Given **t** > 0, we conclude that there is evidence that the
-#   Etruscans had larger skulls on average than Italians
-# - Result suggests there is not a common ancestral link between the two
-#   ancient peoples
 #
 # ### Reference
 #
@@ -149,26 +116,22 @@ plt.show()
 ttest: sm.CompareMeans = sm.CompareMeans.from_data(data1=etr, data2=ita)
 
 # %%
-# initialise DescrStatsW objects
-dsw_etr: sm.DescrStatsW = ttest.d1
-dsw_ita: sm.DescrStatsW = ttest.d2
-
-# %%
 # check for common population variance. Expect < 3
-max(dsw_etr.var / dsw_ita.var, dsw_ita.var / dsw_etr.var) < 3
+max(ttest.d1.var / ttest.d2.var, ttest.d2.var / ttest.d1.var) < 3
 
 
 # %%
 describe.TSample(
-    "Etruscans", dsw_etr.nobs, dsw_etr.mean, dsw_etr.tconfint_mean())
+    "Etruscans", ttest.d1.nobs, ttest.d1.mean, ttest.d1.tconfint_mean())
+
 
 # %%
 describe.TSample(
-    "Italians", dsw_ita.nobs, dsw_ita.mean, dsw_ita.tconfint_mean())
+    "Italians", ttest.d2.nobs, ttest.d2.mean, ttest.d2.tconfint_mean())
 
 # %%
 describe.TDiff(
-    dsw_etr.mean - dsw_ita.mean, ttest.tconfint_diff())
+    ttest.d1.mean - ttest.d2.mean, ttest.tconfint_diff())
 
 # %%
 # run the test
