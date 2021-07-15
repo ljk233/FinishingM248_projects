@@ -94,18 +94,20 @@ ita: pd.Series = skulls.query('type == "Italian"')["size"]
 
 # %%
 # frequency histograms
-g = sns.FacetGrid(skulls, col="type")
-g.map_dataframe(sns.histplot, x="size", bins=10)
-g.set_axis_labels("Size", "Count")
+f, axs = plt.subplots(ncols=2, sharey=True, figsize=(11, 4))
+sns.histplot(x=etr, bins=10, ax=axs[0])
+sns.histplot(x=ita, bins=10, ax=axs[1])
+axs[0].set(title="Skull = Etruscans")
+axs[1].set(title="Skull = Italians")
 plt.show()
 
 # %%
 # probability plots
-f, axs = plt.subplots(ncols=2, sharey=True)
+f, axs = plt.subplots(ncols=2, sharey=True, figsize=(11, 4))
 stats.probplot(x=etr, plot=axs[0])
 stats.probplot(x=ita, plot=axs[1])
-axs[0].set(title="Probability plot = Etruscans")
-axs[1].set(title="Probability plot = Italians")
+axs[0].set(title="Skull = Etruscans")
+axs[1].set(title="Skull = Italians")
 plt.show()
 
 # %% [markdown]
