@@ -14,15 +14,15 @@
 # ---
 
 # %% [markdown]
-# # Comparing the total pass rate of the UK driving practical test in 2013 and 2014  # noqa:  E501
+# # Pass rate UK driving practical test, 2013 and 2014
 #
 # ## Notes
 #
 # ### Question of interest
 #
-# Was the overall mean pass for the UK driving practical test from April
-# 2014 to March 2015 equal to 47.1%, the mean total pass rate from April
-# 2013 to March 2014?
+# Was the overall mean pass for the UK driving practical test from
+# April 2014 to March 2015 equal to 47.1%, the mean total pass rate
+# from April 2013 to March 2014?
 #
 # ### Data
 #
@@ -45,30 +45,6 @@
 # - Mean and 95% **z**-interval calculated for the total pass rate
 # - Performed **z**-test: mean total pass rate of the UK driving
 #   practical test was equal to 47.1%
-#
-# ### Results
-#
-# - The data returned the descriptive column `type` as an `object`,
-#   rather than a `str`
-#   - This did not affect the analysis, so not remedial action was taken
-# - None of the visualisations showed using an approximate normal model
-#   was inappropriate
-#   - Frequency histogram shows the data are distributed unimodally and
-#     approximately symmetric
-#   - Probability plots show the data to closely follow a fitted straight
-# - Description of sample:
-#   - `Total(size=316, mean=49.630380, zconfint_mean=(48.840342, 50.420417))`
-# - **z**-test result
-#   - `ResultSummary(zstat=6.277492, pval=0.000000)`
-#
-# ### Discussion
-#
-# - Null hypothesis is rejected with **p**-value < 0.000001
-# - Very strong evidence that the mean pass rate is not equal to 47.1%
-# - Given **z** > 0, conclude that there is evidence that the mean pass
-#   from April 2014 to March 2015 was greater than 47.1%
-# - Result suggests there was an increase in the overall mean total pass
-#   rate of the UK driving practical test
 #
 # ### Reference
 #
@@ -123,13 +99,13 @@ total: pd.Series = prac_driving.query('type == "total"')["pass_rate"]
 
 # %%
 # frequency histogram
-f, ax = plt.subplots()
+f, ax = plt.subplots(figsize=(5.5, 4))
 ax = sns.histplot(x=total, bins=12)
 plt.show()
 
 # %%
 # probability plot of sample
-f, ax = plt.subplots()
+f, ax = plt.subplots(figsize=(5.5, 4))
 stats.probplot(x=total, plot=ax)
 plt.show()
 
@@ -145,7 +121,7 @@ describe.ZSample(
     "Total", dsw_total.nobs, dsw_total.mean, dsw_total.zconfint_mean())
 
 # %%
-# hypothesised mean value
+# hypothesised mean total pass rate
 mu0 = 47.1
 
 # %%
